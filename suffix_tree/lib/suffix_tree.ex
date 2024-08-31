@@ -10,7 +10,7 @@ defmodule SuffixTree do
   end
 
   def phases(root, text, start_idx) do
-    {path_to_following_node_reversed, matched, original_remainder,
+    {path_to_following_node, matched, original_remainder,
      %{start_idx: _, length: _} = new_remainder} =
       follow_path({start_idx, length(text) - start_idx, text}, root)
 
@@ -19,7 +19,7 @@ defmodule SuffixTree do
 
     updated_root =
       split_node(
-        {root, path_to_following_node_reversed |> Enum.reverse()},
+        {root, path_to_following_node},
         matched,
         original_remainder,
         new_remainder,
@@ -78,10 +78,10 @@ defmodule SuffixTree do
                 child_node
               )
 
-            {[key, :children | path], matched, original_remainder, new_remainder}
+            {[:children, key | path], matched, original_remainder, new_remainder}
 
           _ ->
-            {[key, :children],
+            {[:children, key],
              %{start_idx: child_node[:start_idx], length: length(matched_string)},
              %{
                start_idx: child_node[:start_idx] + length(matched_string),

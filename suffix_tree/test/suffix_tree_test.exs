@@ -223,7 +223,7 @@ defmodule SuffixTreeTest do
                 children: nil
               },
               "d" => %{
-                start_idx: 2,
+                start_idx: 1,
                 length: 1,
                 children: %{
                   "c" => %{start_idx: 6, length: 2, children: nil},
@@ -233,7 +233,7 @@ defmodule SuffixTreeTest do
             }
           },
           "d" => %{
-            start_idx: 2,
+            start_idx: 1,
             length: 1,
             children: %{
               "c" => %{
@@ -241,14 +241,14 @@ defmodule SuffixTreeTest do
                 length: 1,
                 children: %{
                   "d" => %{start_idx: 5, length: 3, children: nil},
-                  "$" => %{start_idx: 8, length: 1, children: nil}
+                  "$" => %{start_idx: 7, length: 1, children: nil}
                 }
               },
               "d" => %{
                 start_idx: 2,
                 length: 1,
                 children: %{
-                  "c" => %{start_idx: 5, length: 3, children: nil},
+                  "c" => %{start_idx: 4, length: 4, children: nil},
                   "d" => %{start_idx: 3, length: 5, children: nil}
                 }
               }
@@ -344,7 +344,8 @@ defmodule SuffixTreeTest do
             start_idx: 5,
             length: 6,
             children: nil
-          }
+          },
+          "$" => %{length: 1, children: nil, start_idx: 10}
         }
       }
 
