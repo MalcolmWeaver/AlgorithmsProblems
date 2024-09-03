@@ -52,6 +52,15 @@ defmodule SuffixTreeTest do
 
       assert {_path, nil, nil, %{start_idx: 6, length: 0}} =
                SuffixTree.follow_path({3, 3, "aabcb$" |> String.graphemes()}, tree)
+
+      require IEx
+      IEx.pry()
+
+      assert {_path, nil, nil, %{start_idx: 6, length: 0}} =
+               SuffixTree.follow_path({3, 3, "a" |> String.graphemes()}, %{
+                 is_root: true,
+                 children: nil
+               })
     end
   end
 

@@ -1,21 +1,105 @@
 defmodule SuffixTree do
+  require IEx
+
   def build_suffix_tree(text) do
     root = %{is_root: true, children: nil}
     text = (text <> "$") |> String.graphemes()
-    phases(root, text, 0)
+    naive_algorithm(root, text, 0)
   end
 
-  def phases(root, text, start_idx) when start_idx == length(text) do
+  def implicit_suffix_tree(text) do
+    IO.inspect("FIRST ITERATION IMPLICIT ST")
+    root = %{is_root: true, children: nil}
+    text = text |> String.graphemes()
+    suffix_extensions_1_phase(root, 1, text)
+  end
+
+  def suffix_extensions_1_phase(tree, i, text) when i > length(text) do
+    tree
+  end
+
+  def suffix_extensions_1_phase(tree, i, full_text) do
+    Enum.reduce(0..(i - 1), tree, fn j, accumlator_tree ->
+      IEx.pry()
+      ans = extension(j, i, accumlator_tree, full_text)
+
+      IEx.pry()
+      ans
+    end)
+
+    suffix_extensions_1_phase(tree, i + 1, full_text)
+  end
+
+  def extension(j, i, tree, full_text) do
+    {suffix_path, matched, original_remainder, new_remainder} =
+      follow_path({j, i - j, full_text}, tree)
+
+    IEx.pry()
+
+    extension_rules(
+      full_text,
+      tree,
+      suffix_path,
+      matched,
+      original_remainder,
+      new_remainder,
+      {j, i}
+    )
+  end
+
+  # Case 3
+  def extension_rules(_, tree, _, _, _, %{length: 0}, _), do: tree
+
+  # Case 1 (ends on leaf)
+
+  # Edge case: leaf is also the root
+  def extension_rules(
+        text,
+        tree,
+        [],
+        nil,
+        nil,
+        %{start_idx: new_rem_start_idx, length: 1},
+        {new_string_start, _new_string_end}
+      ) do
+    require IEx
+    IEx.pry()
+
+    tree
+    |> Map.put(
+      :children,
+      Map.merge(tree[:children] || %{}, %{
+        (text |> Enum.at(new_rem_start_idx)) => %{start_idx: new_string_start, length: 1}
+      })
+    )
+  end
+
+  def extension_rules(text, tree, path_to_node, nil, nil, _new_remainder, _) do
+    # Non Root
+    {old_node_value, tree} =
+      tree
+      |> get_and_update_in(path_to_node, fn %{start_idx: start_idx, length: len} ->
+        %{start_idx: start_idx, length: len + 1}
+      end)
+
+    require IEx
+    IEx.pry()
+    tree
+  end
+
+  # Case 2
+  def extension_rules(text, tree, path_to_node, matched, original_remainder, new_remainder, _) do
+    split_node({tree, path_to_node}, matched, original_remainder, new_remainder, text)
+  end
+
+  def naive_algorithm(root, text, start_idx) when start_idx == length(text) do
     root
   end
 
-  def phases(root, text, start_idx) do
+  def naive_algorithm(root, text, start_idx) do
     {path_to_following_node, matched, original_remainder,
      %{start_idx: _, length: _} = new_remainder} =
       follow_path({start_idx, length(text) - start_idx, text}, root)
-
-    # require IEx
-    # IEx.pry()
 
     updated_root =
       split_node(
@@ -26,7 +110,7 @@ defmodule SuffixTree do
         text
       )
 
-    phases(updated_root, text, start_idx + 1)
+    naive_algorithm(updated_root, text, start_idx + 1)
   end
 
   def split_node({root, []}, nil, nil, new_remainder, text) do
@@ -55,6 +139,8 @@ defmodule SuffixTree do
     root |> put_in(path_to_following_node, node)
   end
 
+  # @spec follow_path({integer(), integer(), list(any())}, node) ::
+  #         {path, matched, original_remainder, new_remainder}
   def follow_path({start_idx, len, full_text}, node) do
     key = Enum.at(full_text, start_idx)
 
